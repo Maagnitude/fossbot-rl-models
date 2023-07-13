@@ -1,3 +1,5 @@
+This repo contains the code used, to develop and evaluate **RL models** for the **FOSSBot** open source educational robot, for my **Bachelor Thesis**.
+
 ## Running TensorBoard server (on port 6006)
 ```
 tensorboard --logdir=logs
