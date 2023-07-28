@@ -2,15 +2,18 @@ import gym
 from gym import spaces
 import numpy as np
 
-REWARD = 0
-HIT_OBSTACLE = 0
+def manhattan(a, b):
+    return sum(abs(val1-val2) for val1, val2 in zip(a,b))
 
 class GridEnvironment(gym.Env):
     def __init__(self):
-        self.grid_size = 3
+        self.grid_size = 9
         self.agent_value = 2
         self.obstacle_value = 1
         self.free_block_value = 0
+        self.reward = 0
+        self.hit_obstacle = 0
+        self.closer = False
 
         self.action_space = spaces.Discrete(4)  # Up, Down, Left, Right
         self.observation_space = spaces.Box(low=0, high=1, shape=(self.grid_size, self.grid_size), dtype=np.float32)
@@ -21,12 +24,13 @@ class GridEnvironment(gym.Env):
         self.grid = np.zeros((self.grid_size, self.grid_size), dtype=np.float32)
         self.agent_pos = (0, 0)
         self.goal_pos = (self.grid_size - 1, self.grid_size - 1)
+        self.reward = 0
 
         self.grid[self.goal_pos] = self.free_block_value
         self.grid[self.agent_pos] = self.free_block_value
         
         # Randomly place obstacles
-        num_obstacles = int(self.grid_size * self.grid_size * 0.3)  # 30% of grid cells as obstacles
+        num_obstacles = int(self.grid_size * self.grid_size * 0.15)  # 30% of grid cells as obstacles
         obstacle_positions = np.random.choice(
             range(self.grid_size * self.grid_size), size=num_obstacles, replace=False
         )
@@ -47,9 +51,8 @@ class GridEnvironment(gym.Env):
         return self.grid.copy()
 
     def step(self, action):
-        global REWARD
-        global HIT_OBSTACLE
         x, y = self.agent_pos
+        old_position = self.agent_pos
 
         if action == 0:  # Up
             x -= 1
@@ -67,18 +70,23 @@ class GridEnvironment(gym.Env):
             self.grid[self.agent_pos] = self.agent_value
         else:
             self.grid[self.agent_pos] = self.free_block_value
-            self.agent_pos = (0, 0)
             self.grid[self.agent_pos] = self.agent_value
-            REWARD += -15.0
-            HIT_OBSTACLE += 1
+            self.reward -= manhattan(self.goal_pos, self.agent_pos)
+            self.hit_obstacle += 1
 
         done = self.agent_pos == self.goal_pos
         if done:
-            REWARD += 10000.0
-        else:
-            REWARD += -1.0
+            self.reward += 10000000.0
+        elif manhattan(self.goal_pos, self.agent_pos) < manhattan(self.goal_pos, old_position):
+            # Reward agent for moving closer to goal
+            self.closer = True
+            self.reward += (30 - manhattan(self.goal_pos, self.agent_pos))
+        elif manhattan(self.goal_pos, self.agent_pos) > manhattan(self.goal_pos, old_position):
+            # Penalize agent for moving away from goal
+            self.reward -= manhattan(self.goal_pos, self.agent_pos)
+            self.closer = False
 
-        return self.grid.copy(), REWARD, done, {}
+        return self.grid.copy(), self.reward, done, {}
 
     def render(self):
         print(self.grid)
