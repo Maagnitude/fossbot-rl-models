@@ -8,3 +8,12 @@
 13-07-2023 22:23:12 - ppo_agent_80000_new's average reward over 10 episodes: 2878332.5
 13-07-2023 22:23:25 - ppo_agent_80000_new's average reward over 10 episodes: 7405967.2
 13-07-2023 22:23:35 - ppo_agent_80000_new's average reward over 10 episodes: 3886624.5
+28-07-2023 18:05:15 - ppo_agent_80000_new's average reward over 10 episodes: 6017787.7
+28-07-2023 20:24:00 - ppo_agent_90000's average reward over 10 episodes: 10508464.0
+28-07-2023 20:24:47 - ppo_agent_90000_new's average reward over 10 episodes: 10330779.1
+28-07-2023 20:25:34 - ppo_agent_90000_new_new's average reward over 10 episodes: 10274760.7
+28-07-2023 20:26:43 - ppo_agent_90000_new_new_new's average reward over 10 episodes: 10282016.8
+28-07-2023 20:27:19 - ppo_agent_90000_new_new_new_new's average reward over 10 episodes: 10008537.5
+28-07-2023 20:28:44 - ppo_agent_90000_new_new_new_new_new's average reward over 10 episodes: 11088866.5
+28-07-2023 20:29:44 - ppo_agent_90000_new_new_new_new_new_new's average reward over 10 episodes: 10237405.0
+28-07-2023 20:30:31 - ppo_agent_90000_new_new_new_new_new_new_new's average reward over 10 episodes: 10519870.5

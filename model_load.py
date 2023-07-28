@@ -1,5 +1,5 @@
 from stable_baselines3 import PPO
-from grid_env import GridEnvironment, REWARD, HIT_OBSTACLE
+from grid_env import GridEnvironment
 import os
 from datetime import datetime
 
@@ -7,7 +7,7 @@ from datetime import datetime
 env = GridEnvironment()
 
 models_dir = "models/PPO"
-model_name = "ppo_agent_80000_new"
+model_name = "ppo_agent_90000"
 model_path = f"{models_dir}/{model_name}"
 
 # Load the trained agent
@@ -20,7 +20,7 @@ for ep in range(episodes):
     obs = env.reset()
     done = False
     episode_reward = 0
-    REWARD = 0
+    
     
     done = False
     action_list = []
@@ -33,8 +33,10 @@ for ep in range(episodes):
         env.render()
         
         # print(f"Action list: {action_list}")
+        print(f"Action taken: {action}")
+        print(f"Agent moved " + ("closer" if env.closer else "away") + " from the goal!")
         print(f"Episode reward: {episode_reward}")
-        print(f"Hit obstacle {HIT_OBSTACLE} times!")
+        print(f"Hit obstacle {env.hit_obstacle} times!")
         
     total_rewards += episode_reward
 
