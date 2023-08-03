@@ -7,7 +7,7 @@ from datetime import datetime
 
 models_dir = "models/PPO"
 logdir = "logs"
-model_name = "ppo_gridworld_9x9"
+model_name = "ppo_gridworld_15x15_2"
 
 if not os.path.exists(models_dir):
     os.makedirs(models_dir)
@@ -32,11 +32,11 @@ model = PPO(policy="MlpPolicy",
             tensorboard_log=logdir,
             gamma=0.95)
     
-desired_avg_reward = 1000  # Set the desired threshold to 0.0
+desired_avg_reward = 1500  # Set the desired threshold to 0.0
 
 last_score = -1000
 while True:
-    model.learn(total_timesteps=10000, reset_num_timesteps=False, tb_log_name="PPO")  # Perform a training iteration
+    model.learn(total_timesteps=10000, reset_num_timesteps=False, tb_log_name="PPO_2")  # Perform a training iteration
 
     # Evaluate the model's performance over multiple episodes
     eval_episodes = 10  # Set the number of evaluation episodes
@@ -55,7 +55,7 @@ while True:
             if done == True:
                 if reward == 1000.0:
                     print("Goal Reached")
-                elif reward == -55.0:
+                elif reward == -65.0:
                     print("Crushed in obstacle")
                 elif reward == -100.0:
                     print("Hit the boundary")
@@ -73,7 +73,7 @@ while True:
         os.makedirs("records")
 
     current_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-    file_path = os.path.join("records", "ppo_records.txt")
+    file_path = os.path.join("records", "ppo_records_2.txt")
     with open(file_path, "a") as f:
         f.write(f"{current_time} - {model_name}'s average reward over {eval_episodes} episodes: {avg_reward}\n")
 

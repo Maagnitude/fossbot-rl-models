@@ -12,9 +12,9 @@ def goal_direction(agent_pos, goal_pos, agent_orientation):
             goal_from_agent = math.degrees(math.atan2(goal_pos[1] - agent_pos[1], goal_pos[0] - agent_pos[0]))
             diff = abs(agent_orientation - goal_from_agent - 90)
             if diff > 45:
-                reward = -10.0
+                reward = -15.0
             else:
-                reward = -1.0
+                reward = -0.5
             return reward, goal_from_agent
 
 class GridEnvironment(gym.Env):
@@ -153,7 +153,7 @@ class GridEnvironment(gym.Env):
                 self.reward = 0.0
                 self.agent_pos = (x, y)
                 if self.grid[self.agent_pos] == self.goal_value:
-                    self.reward = 1000.0
+                    self.reward = 1500.0
                     self.grid[self.agent_pos] = self.agent_on_goal_value
                     done = True
                 else:
@@ -166,7 +166,7 @@ class GridEnvironment(gym.Env):
             elif self.grid[x, y] == self.obstacle_value:
                 self.grid[self.agent_pos] = self.free_block_value
                 self.agent_pos = (x, y)
-                self.reward = -65.0
+                self.reward = -45.0
                 self.grid[self.agent_pos] = self.agent_on_obstacle_value
                 done = True
         else:
@@ -180,7 +180,7 @@ class GridEnvironment(gym.Env):
                 self.grid[x, y] = self.agent_on_obstacle_value
             elif y == 0:
                 self.grid[x, y] = self.agent_on_obstacle_value
-            self.reward = -100.0
+            self.reward = -120.0
             done = True
 
         # elif manhattan(self.goal_pos, self.agent_pos) < manhattan(self.goal_pos, old_position):
