@@ -1,0 +1,42 @@
+{
+    "os": "Windows-10-10.0.19045-SP0",
+    "python": "3.11.4",
+    "heartbeatAt": "2023-08-04T17:41:36.335578",
+    "startedAt": "2023-08-04T17:41:34.564698",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "C:\\Users\\yiwrg\\Desktop\\Bachelor Thesis\\Codes\\model-save.py",
+    "codePath": "model-save.py",
+    "git": {
+        "remote": "git@github.com:Maagnitude/fossbot-rl-models.git",
+        "commit": "468a397b7fa5e0a59631175e4e0a919ba900730f"
+    },
+    "email": "yiwrgos_v.i.p@hotmail.com",
+    "root": "C:/Users/yiwrg/Desktop/Bachelor Thesis/Codes",
+    "host": "DESKTOP-I23R8BC",
+    "username": "yiwrg",
+    "executable": "C:\\Users\\yiwrg\\anaconda3\\envs\\fossbotrl\\python.exe",
+    "cpu_count": 8,
+    "cpu_count_logical": 16,
+    "cpu_freq": {
+        "current": 3700.0,
+        "min": 0.0,
+        "max": 3700.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 3700.0,
+            "min": 0.0,
+            "max": 3700.0
+        }
+    ],
+    "disk": {
+        "total": 418.57329177856445,
+        "used": 354.88364028930664
+    },
+    "memory": {
+        "total": 15.924724578857422
+    }
+}

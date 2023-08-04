@@ -533,3 +533,4 @@
 04-08-2023 00:19:05 - ppo_gridworld_15x15_2's average reward over 10 episodes: 336.1
 04-08-2023 00:19:39 - ppo_gridworld_15x15_2's average reward over 10 episodes: 620.6
 04-08-2023 00:20:09 - ppo_gridworld_15x15_2's average reward over 10 episodes: 12.8
+04-08-2023 16:07:11 - ppo_gridworld_15x15_3's average reward over 10 episodes: -75.90870176851749
