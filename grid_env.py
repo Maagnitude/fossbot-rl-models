@@ -4,21 +4,27 @@ import numpy as np
 from visualization import visualize_grid
 import math
 
-def manhattan(a, b):
-    return sum(abs(val1-val2) for val1, val2 in zip(a,b))
-
-def goal_direction(agent_pos, goal_pos, agent_orientation):
-            # Calculate the updated goal_from_agent in azimuth
-            goal_from_agent = math.degrees(math.atan2(goal_pos[1] - agent_pos[1], goal_pos[0] - agent_pos[0]))
-            diff = abs(agent_orientation - goal_from_agent - 90)
-            if diff > 45:
-                reward = -15.0
-            else:
-                reward = -0.5
-            return reward, goal_from_agent
+grid = np.array([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                 [1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1],
+                 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                 [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1],
+                 [1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1],
+                 [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
+                 [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+                 [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+                 [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+                 [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+                 [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+                 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1],
+                 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])
 
 class GridEnvironment(gym.Env):
-    def __init__(self):
+    def __init__(self, max_steps=100):
+        super(GridEnvironment, self).__init__()
+        
+        self.grid = grid.copy()
         self.grid_size = 15
         self.free_block_value = 0
         self.obstacle_value = 1
@@ -27,197 +33,170 @@ class GridEnvironment(gym.Env):
         self.agent_on_obstacle_value = 4
         self.agent_on_goal_value = 5
         self.reward = 0
-        self.closer = False
         self.stand_still = True
-        self.moves = 0
         self.agent_orientation = 90
         self.goal_from_agent = 45
         
-        self.actions = ["TurnLeft", "TurnRight", "MoveForward"]
+        self.actions = ["TurnLeft", "TurnRight", "MoveForward"] # 45 degree turns and 1 step forward
         self.num_actions = len(self.actions)
 
         self.action_space = spaces.Discrete(self.num_actions)
-        self.observation_space = spaces.Box(low=0, high=1, shape=(self.grid_size, self.grid_size), dtype=np.float32)
+        self.max_distance = np.sqrt((self.grid_size-3) ** 2 + (self.grid_size-3) ** 2)  # Maximum possible Euclidean distance
+        self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(12,), dtype=np.float32)
 
-        self.reset()
+        self.last_euclidean_distance = 1
+        self.steps = 0
+        self.max_steps = max_steps
 
     def reset(self):
-        self.grid = np.zeros((self.grid_size, self.grid_size), dtype=np.float32)
+        self.grid = grid.copy()
+        self.last_euclidean_distance=1
         self.agent_pos = (1, 1)
         self.agent_orientation = 90
         self.goal_pos = (self.grid_size - 2, self.grid_size - 2)
         self.reward = 0
         self.stand_still = True
-        self.closer = False
-        self.moves = 0
+        self.steps = 0
         self.goal_from_agent = math.degrees(math.atan2(self.goal_pos[1] - self.agent_pos[1], self.goal_pos[0] - self.agent_pos[0]))
         
-        # 20% obstacles
-        # self.grid = np.array([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        #                       [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
-        #                       [1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1],
-        #                       [1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1],
-        #                       [1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1],
-        #                       [1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1],
-        #                       [1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1],
-        #                       [1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-        #                       [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-        #                       [1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1],
-        #                       [1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1],
-        #                       [1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
-        #                       [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1],
-        #                       [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1],
-        #                       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])
-        
-        self.grid = np.array([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-                              [1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1],
-                              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-                              [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1],
-                              [1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1],
-                              [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
-                              [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-                              [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-                              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
-                              [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
-                              [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
-                              [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
-                              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1],
-                              [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])
-        
-        
-        # RANDOM OBSTACLES
-        # for i in range(self.grid_size):
-        #     if i == 0 or i == self.grid_size - 1:
-        #         obstacle_positions = [j for j in range(i * self.grid_size, i * self.grid_size + self.grid_size)]
-        #     else:
-        #         obstacle_positions = [i * self.grid_size, i * self.grid_size + self.grid_size - 1]
-
-        #     for pos in obstacle_positions:
-        #         self.grid[pos // self.grid_size, pos % self.grid_size] = self.obstacle_value
-
-        # for j in range(1, self.grid_size - 1):
-        #     obstacle_positions = [j * self.grid_size, j * self.grid_size + self.grid_size - 1]
-        #     for pos in obstacle_positions:
-        #         self.grid[pos // self.grid_size, pos % self.grid_size] = self.obstacle_value
-        
-        # # Randomly place obstacles
-        # num_obstacles = int(self.grid_size * self.grid_size * 0.06)  # 6% of grid cells as obstacles
-        # obstacle_positions = np.random.choice(
-        #     range(self.grid_size * self.grid_size), size=num_obstacles, replace=False
-        # )
-        # # Make sure the goal is not an obstacle
-        # obstacle_positions = obstacle_positions[obstacle_positions != self.grid_size * self.grid_size - 2]
-        
-        # # Make sure that the position before the goal is not an obstacle
-        # obstacle_positions = obstacle_positions[obstacle_positions != self.grid_size * self.grid_size - 3]
-        
-        # # Make sure that the position after the first position is not an obstacle
-        # obstacle_positions = obstacle_positions[obstacle_positions != 1]
-        
-        # self.grid = self.grid.flatten()
-        # self.grid[obstacle_positions] = self.obstacle_value
-        
-        # self.grid = self.grid.reshape((self.grid_size, self.grid_size))
         self.grid[self.goal_pos] = self.goal_value
-        # self.grid[self.agent_pos] = self.agent_value
         self.grid[self.agent_pos] = self.agent_value
+        
+        obs = self._calculate_observation()
 
-        return self.grid.copy()/5
+        return obs
 
     def step(self, action):
         x, y = self.agent_pos
         done = False
 
         if action == 0:  # TurnLeft
-            self.agent_orientation = (self.agent_orientation - 90) % 360
+            self.agent_orientation = (self.agent_orientation - 45) % 360
             self.stand_still = True
         elif action == 1:  # TurnRight
-            self.agent_orientation = (self.agent_orientation + 90) % 360
+            self.agent_orientation = (self.agent_orientation + 45) % 360
             self.stand_still = True
         elif action == 2:  # MoveForward
             if self.agent_orientation == 0:  # NORTH
                 x -= 1
+            elif self.agent_orientation == 45: # NORTH-EAST
+                x -= 1
+                y += 1
             elif self.agent_orientation == 90:  # EAST
+                y += 1
+            elif self.agent_orientation == 135:  # SOUTH-EAST
+                x += 1
                 y += 1
             elif self.agent_orientation == 180:  # SOUTH
                 x += 1
+            elif self.agent_orientation == 225:  # SOUTH-WEST
+                x += 1
+                y -= 1
             elif self.agent_orientation == 270:  # WEST
-                y -= 1   
+                y -= 1  
+            elif self.agent_orientation == 315:  # NORTH-WEST
+                x -= 1
+                y -= 1 
             self.stand_still = False  
 
         # Check if the new position is valid
-        if 1 <= x < self.grid_size-1 and 1 <= y < self.grid_size-1:
+        if self._is_valid_position(x, y):
             if self.grid[x, y] != self.obstacle_value and self.stand_still == False:
                 self.grid[self.agent_pos] = self.free_block_value
                 self.reward = 0.0
                 self.agent_pos = (x, y)
                 if self.grid[self.agent_pos] == self.goal_value:
-                    self.reward = 1500.0
+                    self.reward = 1000.0
                     self.grid[self.agent_pos] = self.agent_on_goal_value
                     done = True
+                    obs = self._calculate_observation()
+                    return obs, self.reward, done, {}
                 else:
                     self.grid[self.agent_pos] = self.agent_value
-                    self.reward, self.goal_from_agent = goal_direction(self.agent_pos, self.goal_pos, self.agent_orientation)       
-                    if not (30 <= self.goal_from_agent <= 60):
-                        self.reward = -1.0        
+                    obs = self._calculate_observation()        
             elif self.stand_still == True:
-                self.reward, self.goal_from_agent = goal_direction(self.agent_pos, self.goal_pos, self.agent_orientation)
+                obs = self._calculate_observation()
+                if self.agent_goal_diff > 5:
+                    self.reward = -1.0
+                else:
+                    self.reward = 0.0
             elif self.grid[x, y] == self.obstacle_value:
+                # HIT OBSTACLE
                 self.grid[self.agent_pos] = self.free_block_value
+                self.reward = -10.0
                 self.agent_pos = (x, y)
-                self.reward = -45.0
                 self.grid[self.agent_pos] = self.agent_on_obstacle_value
                 done = True
+                obs = self._calculate_observation()
+                return obs, self.reward, done, {}
         else:
-            # Agent hit the boundary
+            # HIT BOUNDARY
             self.grid[self.agent_pos] = self.free_block_value
-            if x == self.grid_size-1:
+            if x == self.grid_size - 1:
                 self.grid[x, y] = self.agent_on_obstacle_value
             elif x == 0:
                 self.grid[x, y] = self.agent_on_obstacle_value
-            elif y == self.grid_size-1:
+            elif y == self.grid_size - 1:
                 self.grid[x, y] = self.agent_on_obstacle_value
             elif y == 0:
                 self.grid[x, y] = self.agent_on_obstacle_value
-            self.reward = -120.0
+            self.reward = -15.0
             done = True
+            obs = self._calculate_observation()
+            return obs, self.reward, done, {}
 
-        # elif manhattan(self.goal_pos, self.agent_pos) < manhattan(self.goal_pos, old_position):
-        #     # Reward agent for moving closer to goal
-        #     self.closer = True
-        #     # self.reward = (self.grid_size*2 - manhattan(self.goal_pos, self.agent_pos))
-        #     if self.agent_orientation == 0 or self.agent_orientation == 2:
-        #         yaxis_orientation = self.agent_orientation
-        #     if self.agent_orientation == 1 or self.agent_orientation == 3:
-        #         xaxis_orientation = self.agent_orientation
-        #     self.goal_from_agent = (yaxis_orientation, xaxis_orientation)
-        # elif manhattan(self.goal_pos, self.agent_pos) > manhattan(self.goal_pos, old_position):
-        #     # Penalize agent for moving away from goal
-        #     # self.reward = -(self.grid_size*2 - manhattan(self.goal_pos, self.agent_pos))
-        #     self.closer = False
-        #     if self.agent_orientation == 0 or self.agent_orientation == 2:
-        #         yaxis_orientation = self.agent_orientation
-        #     if self.agent_orientation == 1 or self.agent_orientation == 3:
-        #         xaxis_orientation = self.agent_orientation
-        #     self.goal_from_agent = (yaxis_orientation, xaxis_orientation)
-        # else:
-        #     self.closer = False
         self.goal_from_agent = math.degrees(math.atan2(self.goal_pos[1] - self.agent_pos[1], self.goal_pos[0] - self.agent_pos[0]))
 
-        return self.grid.copy()/5, self.reward, done, {}
+        # Flatten the agent position as the observation
+        self.last_euclidean_distance = obs[0]
+        
+        self.reward = -obs[0]
+        
+        self.steps += 1
+        if self.steps > self.max_steps:
+            done = True
+            self.reward = -10.0
+            
+        # return self.grid.copy()/5, self.reward, done, {}
+        return obs, self.reward, done, {}
 
     def render(self):
-        # print(self.grid)
         visualize_grid(self.grid, self.agent_pos, self.agent_orientation)
+      
+    def _is_valid_position(self, row, col):
+        return 1 <= row < self.grid_size - 1 and 1 <= col < self.grid_size - 1
+      
+    def _calculate_observation(self):
+        agent_row, agent_col = self.agent_pos
+
+        # Calculate Euclidean distance to the goal position
+        goal_row, goal_col = self.goal_pos
+        euclidean_distance = np.linalg.norm([goal_row - agent_row, goal_col - agent_col])
+        euclidean_distance /= self.max_distance  # Scale distance to [0, 1]
+
+        # Calculate direction to the goal position
+        dx = goal_row - agent_row
+        dy = goal_col - agent_col
+        goal_direction = math.atan2(dy, dx)
+        self.goal_from_agent = math.degrees(goal_direction)
+        self.agent_goal_diff = abs(self.agent_orientation - self.goal_from_agent - 90)
+        agent_goal_diff = self.agent_goal_diff/360 # Normalize to [0, 1]
         
-if __name__ == "__main__":
-    env = GridEnvironment()
-    env.reset()
-    env.render()
-    
-    # obstacle = -30
-    # if akinito -> reward = -15
-    # if kinithike or sosti gonia -> reward = 0
-    # if simeio = simeio termatismou -> done = True
+        goal_direction = (goal_direction + math.pi) / (2 * math.pi)  # Normalize to [0, 1]
+
+        # Calculate obstacles around the agent's position
+        obstacle_distances = []
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+                if i == 0 and j == 0:
+                    continue  # Skip the agent's position
+                row = agent_row + i
+                col = agent_col + j
+                if self.grid[row, col] == 0:
+                    obstacle_distances.append(0)  # No obstacle
+                else:
+                    obstacle_distances.append(1)  # Obstacle present
+        steps = self.steps/self.max_steps
+        observation = np.array([euclidean_distance, goal_direction, agent_goal_diff, steps] + obstacle_distances, dtype=np.float32)
+        return observation
     
