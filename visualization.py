@@ -4,7 +4,7 @@ import pygame
 pygame.init()
 
 # Set up the window size
-win_size = (800, 800)
+win_size = (1100, 1100)
 screen = pygame.display.set_mode(win_size)
 pygame.display.set_caption("Grid Environment Video")
 
@@ -20,7 +20,7 @@ def visualize_grid(grid, agent_pos, agent_orientation):
     finished_icon = pygame.image.load("images/finished.png")
     
     # Resize icons to fit the cell size
-    agent_icon = pygame.transform.scale(agent_icon, (cell_size, cell_size))
+    agent_icon = pygame.transform.scale(agent_icon, (cell_size-10, cell_size-10))
     obstacle_icon = pygame.transform.scale(obstacle_icon, (cell_size, cell_size))
     goal_icon = pygame.transform.scale(goal_icon, (cell_size, cell_size))
     crushed_icon = pygame.transform.scale(crushed_icon, (cell_size, cell_size))
@@ -37,8 +37,11 @@ def visualize_grid(grid, agent_pos, agent_orientation):
                 screen.blit(obstacle_icon, cell_rect)
             elif grid[x, y] == 2:  # Agent
                 # Rotate agent icon according to its orientation
-                rotated_agent_icon = pygame.transform.rotate(agent_icon, -agent_orientation)
-                screen.blit(rotated_agent_icon, cell_rect)
+                rotated_agent_icon = pygame.transform.rotate(agent_icon, -agent_orientation)  
+                agent_x = cell_rect.centerx - rotated_agent_icon.get_width() // 2
+                agent_y = cell_rect.centery - rotated_agent_icon.get_height() // 2
+                # Draw the centered and rotated agent icon on the screen
+                screen.blit(rotated_agent_icon, (agent_x, agent_y))
             elif grid[x, y] == 3:  # Goal
                 screen.blit(goal_icon, cell_rect)
             elif grid[x, y] == 4:  # Crushed in obstacle
