@@ -39,6 +39,7 @@ desired_avg_reward = 1000  # Set the desired threshold to 0.0
 last_score = -1000
 total_scores = 0
 updates = 1
+saved = 0
 
 try:
     while True:
@@ -92,11 +93,12 @@ try:
         # Print the average reward
         print(f"Average reward: {avg_reward}")
         if avg_reward > last_score:
+            saved += 1
             last_score = avg_reward
             total_scores += last_score
             model.save(f"{models_dir}/{model_name}")
             
-        avg_score = total_scores / updates
+        avg_score = total_scores / saved
 
         # Check if the average reward meets the desired threshold
         if avg_reward >= desired_avg_reward:
