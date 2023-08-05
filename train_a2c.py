@@ -1,5 +1,5 @@
 import numpy as np
-from sb3_contrib import RecurrentPPO as RPPO
+from stable_baselines3 import A2C
 from grid_env import GridEnvironment
 import os
 import torch as th
@@ -10,9 +10,9 @@ wandb.init(
     project="ppo-train"
 )
 
-models_dir = "models/RecPPO"
+models_dir = "models/A2C"
 logdir = "logs"
-model_name = "recppo_gridworld_15x15"
+model_name = "a2c_gridworld_15x15"
 
 if not os.path.exists(models_dir):
     os.makedirs(models_dir)
@@ -26,7 +26,7 @@ env = GridEnvironment()
 policy_kwargs = dict(activation_fn=th.nn.ReLU,
                      net_arch=dict(pi=[64, 32, 32, 32, 12], vf=[64, 32, 32, 32, 12]))
 
-model = RPPO(policy="MlpLstmPolicy",
+model = A2C(policy="MlpPolicy",
             env=env,  
             verbose=1,          
             learning_rate=1e-3,
@@ -41,10 +41,9 @@ total_scores = 0
 updates = 1
 saves = 0
 
-lstm_states = None
 try:
     while True:
-        model.learn(total_timesteps=10000, reset_num_timesteps=False, tb_log_name="RecPPO_1")  # Perform a training iteration
+        model.learn(total_timesteps=10000, reset_num_timesteps=False, tb_log_name="A2C_1")  # Perform a training iteration
 
         # Evaluate the model's performance over multiple episodes
         eval_episodes = 10  # Set the number of evaluation episodes
@@ -58,7 +57,7 @@ try:
             
             print(f"Eval Episode: {i}")
             while not done:
-                action, _ = model.predict(obs, state=lstm_states, deterministic=True)
+                action, _ = model.predict(obs)
                 obs, reward, done, _ = env.step(action)
                 if done == True:
                     if reward == 1000.0:
@@ -87,7 +86,7 @@ try:
             os.makedirs("records")
 
         current_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-        file_path = os.path.join("records", "recppo_records.txt")
+        file_path = os.path.join("records", "a2c_records.txt")
         with open(file_path, "a") as f:
             f.write(f"{current_time} - {model_name}'s average reward over {eval_episodes} episodes: {avg_reward}\n")
 
