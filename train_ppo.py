@@ -86,7 +86,7 @@ try:
             os.makedirs("records")
 
         current_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-        file_path = os.path.join("records", "ppo_records_3.txt")
+        file_path = os.path.join("records", "ppo_records.txt")
         with open(file_path, "a") as f:
             f.write(f"{current_time} - {model_name}'s average reward over {eval_episodes} episodes: {avg_reward}\n")
 
