@@ -1,5 +1,0 @@
-2023-08-04 20:41:34,608 INFO    StreamThr :27720 [internal.py:wandb_internal():86] W&B internal server running at pid: 27720, started at: 2023-08-04 20:41:34.608235
-2023-08-04 20:41:34,610 DEBUG   HandlerThread:27720 [handler.py:handle_request():144] handle_request: status
-2023-08-04 20:41:34,621 INFO    WriterThread:27720 [datastore.py:open_for_write():85] open: C:\Users\yiwrg\Desktop\Bachelor Thesis\Codes\wandb\run-20230804_204134-849qwiex\run-849qwiex.wandb
-2023-08-04 20:41:34,621 DEBUG   SenderThread:27720 [sender.py:send():379] send: header
-2023-08-04 20:41:34,674 DEBUG   SenderThread:27720 [sender.py:send():379] send: run
