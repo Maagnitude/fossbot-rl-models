@@ -821,3 +821,6 @@
 06-08-2023 17:57:50 - qr_dqn_gridworld_15x15's average reward over 10 episodes: 991.6657617121934
 06-08-2023 17:59:49 - qr_dqn_gridworld_15x15's average reward over 10 episodes: 882.3014454122633
 06-08-2023 18:01:47 - qr_dqn_gridworld_15x15's average reward over 10 episodes: 991.5600017361343
+06-08-2023 18:03:47 - qr_dqn_gridworld_15x15's average reward over 10 episodes: 991.6775468252599
+06-08-2023 18:05:38 - qr_dqn_gridworld_15x15's average reward over 10 episodes: 991.4356590561569
+                                                                                                   
