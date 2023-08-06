@@ -1,5 +1,5 @@
 import numpy as np
-from stable_baselines3 import PPO
+from sb3_contrib import QRDQN
 from grid_env import GridEnvironment
 import os
 import torch as th
@@ -10,9 +10,9 @@ wandb.init(
     project="ppo-train"
 )
 
-models_dir = "models/PPO"
+models_dir = "models/QRDQN"
 logdir = "logs"
-model_name = "ppo_gridworld_15x15"
+model_name = "qr_dqn_gridworld_15x15"
 
 if not os.path.exists(models_dir):
     os.makedirs(models_dir)
@@ -24,9 +24,9 @@ if not os.path.exists(logdir):
 env = GridEnvironment()
 
 policy_kwargs = dict(activation_fn=th.nn.ReLU,
-                     net_arch=dict(pi=[64, 32, 32, 32, 12], vf=[64, 32, 32, 32, 12]))
+                     net_arch=[64, 32, 32, 12])
 
-model = PPO(policy="MlpPolicy",
+model = QRDQN(policy="MlpPolicy",
             env=env,  
             verbose=1,          
             learning_rate=1e-3,
@@ -43,7 +43,7 @@ saves = 0
 
 try:
     while True:
-        model.learn(total_timesteps=10000, reset_num_timesteps=False, tb_log_name="PPO_3")  # Perform a training iteration
+        model.learn(total_timesteps=10000, reset_num_timesteps=False, tb_log_name="QRDQN_1")  # Perform a training iteration
 
         # Evaluate the model's performance over multiple episodes
         eval_episodes = 10  # Set the number of evaluation episodes
@@ -86,7 +86,7 @@ try:
             os.makedirs("records")
 
         current_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-        file_path = os.path.join("records", "ppo_records.txt")
+        file_path = os.path.join("records", "qr_dqn_records.txt")
         with open(file_path, "a") as f:
             f.write(f"{current_time} - {model_name}'s average reward over {eval_episodes} episodes: {avg_reward}\n")
 

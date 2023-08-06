@@ -24,15 +24,14 @@ if not os.path.exists(logdir):
 env = GridEnvironment()
 
 policy_kwargs = dict(activation_fn=th.nn.ReLU,
-                     net_arch=dict(pi=[64, 32, 32, 32, 12], vf=[64, 32, 32, 32, 12]))
+                     net_arch=dict(pi=[64, 32, 32, 12], vf=[64, 32, 32, 12]))
 
 model = A2C(policy="MlpPolicy",
-            env=env,  
-            verbose=1,          
-            learning_rate=1e-3,
+            env=env,           
+            learning_rate=1e-5,
             policy_kwargs=policy_kwargs,
-            tensorboard_log=logdir,
             gamma=0.95)
+model.set_env(env)
     
 desired_avg_reward = 1000  # Set the desired threshold to 0.0
 
