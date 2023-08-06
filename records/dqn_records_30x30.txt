@@ -2577,4 +2577,4 @@
 06-08-2023 17:12:17 - dqn_gridworld_30x30's average reward over 10 episodes: 778.9446083573624
 06-08-2023 17:12:37 - dqn_gridworld_30x30's average reward over 10 episodes: 981.0927671249956
 06-08-2023 17:12:57 - dqn_gridworld_30x30's average reward over 10 episodes: 980.5194486953318
-06-08-2023 17:13:20 - dqn_gridworld_30x30's average reward over 10 episodes: 979.4456148423254
+06-08-2023 17:13:20 - dqn_gridworld_30x30's average reward over 10 episodes: 979.445614842325406-08-2023 21:32:57 - dqn_gridworld_30x30's average reward over 10 episodes: 980.7952363096177

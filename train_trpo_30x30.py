@@ -29,14 +29,16 @@ if not os.path.exists(logdir):
 env = GridEnvironment()
 
 policy_kwargs = dict(activation_fn=th.nn.ReLU,
-                     net_arch=dict(pi=[64, 32, 32, 32, 12], vf=[64, 32, 32, 32, 12]))
+                     net_arch=dict(pi=[64, 32, 32, 32, 32, 12], vf=[64, 32, 32, 32, 32, 12]))
 
 model = TRPO(policy="MlpPolicy",
             env=env,          
-            learning_rate=1e-3,
+            learning_rate=1e-4,
             policy_kwargs=policy_kwargs,
             tensorboard_log=logdir,
             gamma=0.95)
+
+# model = TRPO.load(f"{models_dir}/trpo_gridworld_15x15", env=env)
     
 desired_avg_reward = 1000  # Set the desired threshold to 0.0
 
