@@ -4,7 +4,7 @@ import pygame
 pygame.init()
 
 # Set up the window size
-win_size = (1500, 1500)
+win_size = (1300, 1300)
 screen = pygame.display.set_mode(win_size)
 pygame.display.set_caption("Grid Environment Video")
 
