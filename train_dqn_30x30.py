@@ -1,6 +1,6 @@
 import numpy as np
 from stable_baselines3 import DQN
-from grid_env_30x30 import GridEnvironment
+from grid_env_30x30_sim import GridEnvironment
 import os
 import torch as th
 from datetime import datetime
@@ -11,31 +11,22 @@ wandb.init(
 )
 
 models_dir = "models/DQN"
-logdir = "logs"
-
-# 15x15
-# model_name = "dqn_gridworld_15x15"
-
-# 30x30
-model_name = "dqn_gridworld_30x30"
+# 30x30 for simulation
+model_name = "dqn_gridworld_30x30_sim"
 
 if not os.path.exists(models_dir):
     os.makedirs(models_dir)
-    
-if not os.path.exists(logdir):
-    os.makedirs(logdir)
     
 # Create the MatrixEnvironment
 env = GridEnvironment()
 
 policy_kwargs = dict(activation_fn=th.nn.ReLU,
-                     net_arch=[64, 32, 32, 12])
+                     net_arch=[64, 32, 32, 32, 12])
 
 model = DQN(policy="MlpPolicy",
             env=env,          
             learning_rate=1e-3,
             policy_kwargs=policy_kwargs,
-            tensorboard_log=logdir,
             gamma=0.95)
     
 desired_avg_reward = 1000  # Set the desired threshold to 0.0
@@ -44,10 +35,12 @@ last_score = -1000
 total_scores = 0
 updates = 1
 saves = 0
+avg_score = 0
+total_last_action_distance = 0.0
 
 try:
     while True:
-        model.learn(total_timesteps=10000, reset_num_timesteps=False, tb_log_name="DQN_2")  # Perform a training iteration
+        model.learn(total_timesteps=10000, reset_num_timesteps=False, progress_bar=True)  # Perform a training iteration
 
         # Evaluate the model's performance over multiple episodes
         eval_episodes = 10  # Set the number of evaluation episodes
@@ -63,14 +56,14 @@ try:
             while not done:
                 action, _ = model.predict(obs)
                 obs, reward, done, _ = env.step(action)
-                if done == True:
-                    if reward == 1000.0:
-                        print("Goal Reached")
-                    elif reward == -10.0:
-                        print("Crushed in obstacle")
-                    elif reward == -15.0:
-                        print("Hit the boundary")
-                print(f"Step: {env.steps},   Euclidean Distance: {obs[0]},   Degrees from goal: {env.agent_goal_diff}")
+                if reward == 1000.0:
+                    print("Goal Reached")
+                elif reward == -15.0 and env.steps == env.max_steps:
+                    print("Max steps reached")
+                elif reward == -15.0 and (env.spinning_left > 15 or env.spinning_right > 15):
+                    print("Spinning too much")
+                elif reward == -15.0:
+                    print("Hit an obstacle")
                 total_reward += reward
                 # env.render()
             total_last_action_distance += obs[0]            
@@ -90,7 +83,7 @@ try:
             os.makedirs("records")
 
         current_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-        file_path = os.path.join("records", "dqn_records_30x30.txt")
+        file_path = os.path.join("records", "dqn_records_30x30_sim.txt")
         with open(file_path, "a") as f:
             f.write(f"{current_time} - {model_name}'s average reward over {eval_episodes} episodes: {avg_reward}\n")
 
@@ -112,11 +105,15 @@ try:
 except KeyboardInterrupt:
     print("Training interrupted.")
 finally:
-    ans = input(f"Average score of previous updates: {avg_score}\nLast average reward: {avg_reward}\nDo you want to save it?(Y/n)")
-    if ans == "Y" or ans == "y":
+    try:
+        ans = input(f"Average score of previous updates: {avg_score}\nLast average reward: {avg_reward}\nDo you want to save it?(Y/n)")
+        if ans == "Y" or ans == "y":
+            model.save(f"{models_dir}/{model_name}")
+            print("Model saved!")
+        else:
+            print("Model not saved!")
+    except NameError:
         model.save(f"{models_dir}/{model_name}")
         print("Model saved!")
-    else:
-        print("Model not saved!")
     print("Training ended!")
     wandb.finish()

@@ -1,17 +1,18 @@
 import numpy as np
 from stable_baselines3 import PPO
-from grid_env import GridEnvironment
+from grid_env_30x30_sim import GridEnvironment
 import os
 import torch as th
 from datetime import datetime
 import wandb
 
 wandb.init(
-    project="ppo-train"
+    project="grid_30x30_models",
+    resume=True
 )
 
 models_dir = "models/PPO"
-model_name = "ppo_gridworld_15x15_2"
+model_name = "ppo_gridworld_30x30_sim"
 
 if not os.path.exists(models_dir):
     os.makedirs(models_dir)
@@ -26,7 +27,7 @@ model = PPO(policy="MlpPolicy",
             env=env,           
             learning_rate=1e-3,
             policy_kwargs=policy_kwargs,
-            batch_size=128,
+            batch_size=32,
             gamma=0.95)
     
 desired_avg_reward = 1000  # Set the desired threshold to 0.0
@@ -56,13 +57,14 @@ try:
             while not done:
                 action, _ = model.predict(obs)
                 obs, reward, done, _ = env.step(action)
-                if done == True:
-                    if reward == 1000.0:
-                        print("Goal Reached")
-                    elif reward == -10.0:
-                        print("Crushed in obstacle")
-                    elif reward == -15.0:
-                        print("Hit the boundary")
+                if reward == 1000.0:
+                    print("Goal Reached")
+                elif reward == -15.0 and env.steps == env.max_steps:
+                    print("Max steps reached")
+                elif reward == -15.0 and (env.spinning_left > 15 or env.spinning_right > 15):
+                    print("Spinning too much")
+                elif reward == -15.0:
+                    print("Hit an obstacle")
                 # print(f"Step: {env.steps},   Euclidean Distance: {obs[0]},   Degrees from goal: {env.agent_goal_diff}")
                 total_reward += reward
                 # env.render()
