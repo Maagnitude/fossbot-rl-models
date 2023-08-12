@@ -35,7 +35,7 @@ class GridEnvironment(gym.Env):
 
         self.action_space = spaces.Discrete(self.num_actions)
         self.max_distance = np.linalg.norm([self.grid_size-2, self.grid_size-2])  # Maximum possible Euclidean distance
-        self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(6,), dtype=np.float32)
+        self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(4,), dtype=np.float32)
 
         self.last_euclidean_distance = 1
         self.steps = 0
@@ -273,7 +273,7 @@ class GridEnvironment(gym.Env):
         #         else:
         #             obstacle_distances.append(1)  # Obstacle present
         # steps = self.steps/self.max_steps
-        return np.array([self.last_euclidean_distance, sens_dist_norm, angle_norm, agent_goal_diff, goal_direction_norm, steps_norm])
+        return np.array([self.last_euclidean_distance, sens_dist_norm, agent_goal_diff, steps_norm])
     
     
     def _check_collision(self):
