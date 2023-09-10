@@ -13,7 +13,7 @@ ppo_last_row = df_ppo.iloc[-1]
 dqn_last_row = df_dqn.iloc[-1]
 
 # Define the labels and data for the bar plot
-labels = ["Finished (%)", "Avg Reward (x10)", "Avg Steps", "Avg Total Distance"]
+labels = ["Finished (%)", "Avg Reward (x10)", "Avg Steps (x10)", "Avg Total Distance (m)"]
 ppo_data = ppo_last_row[1:]  # Exclude the first column (Episode Number) for PPO
 dqn_data = dqn_last_row[1:]  # Exclude the first column (Episode Number) for DQN
 
