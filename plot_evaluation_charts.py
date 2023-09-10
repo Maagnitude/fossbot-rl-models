@@ -13,7 +13,7 @@ ppo_last_row = df_ppo.iloc[-1]
 dqn_last_row = df_dqn.iloc[-1]
 
 # Define the labels and data for the bar plot
-labels = ["Finished Percentage (%)", "Average Reward (x10)", "Average Steps", "Average Total Distance"]
+labels = ["Finished (%)", "Avg Reward (x10)", "Avg Steps", "Avg Total Distance"]
 ppo_data = ppo_last_row[1:]  # Exclude the first column (Episode Number) for PPO
 dqn_data = dqn_last_row[1:]  # Exclude the first column (Episode Number) for DQN
 
@@ -42,18 +42,18 @@ ax.bar(index - bar_width / 2, ppo_data, bar_width, label='PPO', color=colors[0])
 ax.bar(index + bar_width / 2, dqn_data, bar_width, label='DQN', color=colors[1])
 
 # Set labels and title
-ax.set_xlabel('Metrics')
-ax.set_ylabel('Values')
-ax.set_title('Comparison of PPO and DQN Metrics (1000 Episodes)')
+ax.set_xlabel('Metrics', fontsize=15)
+ax.set_ylabel('Values', fontsize=15)
+ax.set_title('Comparison of PPO and DQN Metrics (1000 Episodes)', fontsize=15)
 ax.set_xticks(index)
-ax.set_xticklabels(labels)
-ax.legend()
+ax.set_xticklabels(labels, fontsize=15)
+ax.legend(fontsize=15)
 
 # Add labels for the values above the bars
 for i, v in enumerate(ppo_data):
-    ax.text(i - bar_width / 2, v + 1, str(round(v, 2)), ha='center', va='bottom', color='black')
+    ax.text(i - bar_width / 2, v + 1, str(round(v, 2)), ha='center', va='bottom', color='black', fontsize=11.5)
 for i, v in enumerate(dqn_data):
-    ax.text(i + bar_width / 2, v + 1, str(round(v, 2)), ha='center', va='bottom', color='black')
+    ax.text(i + bar_width / 2, v + 1, str(round(v, 2)), ha='center', va='bottom', color='black', fontsize=11.5)
 
 # Display the plot
 plt.tight_layout()
